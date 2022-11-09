@@ -21,14 +21,15 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 public class LocationPage extends AppCompatActivity {
+    //Högst 5000ms mellan uppdateringar
     public static final int DEF_UPDATE = 5000;
+    //Minst 3000ms mellan uppdateringar
     public static final int DEF_MIN_UPDATE = 3000;
-    //Used to find location
+    //Hittar plats
     FusedLocationProviderClient locationClient;
-
-    //Settings for FusedLocation
+    //Config för locationClient
     LocationRequest locationReq;
-
+    //Används vid automatisk update
     LocationCallback locationCallback;
 
     @Override
@@ -110,6 +111,7 @@ public class LocationPage extends AppCompatActivity {
                     });
 
         } else {
+            ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             System.out.println("no permissions booooo");
         }
     }

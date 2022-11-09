@@ -16,7 +16,18 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+/*
 
+Användes för första omgång tester, används för nuvarande inte
+
+
+
+
+
+
+
+
+ */
 public class LocationUpdate {
     public static final int DEF_UPDATE = 5000;
     public static final int DEF_MIN_UPDATE = 3000;
