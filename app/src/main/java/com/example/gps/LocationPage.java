@@ -36,7 +36,8 @@ public class LocationPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
-        Button button = findViewById(R.id.button);
+        Button autoUpdateStart = findViewById(R.id.button);
+        Button currentLocation = findViewById(R.id.button2);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
@@ -56,19 +57,28 @@ public class LocationPage extends AppCompatActivity {
                 String latitude = String.valueOf(location.getLatitude());
                 String[] res = {latitude, longitude};
                 String loc = "updated latitude set to: " + res[0] + "updated longitude set to: " + res[1];
-                System.out.println(locationResult.getLocations());
+                System.out.println(loc);
 
             }
         };
 
-        firstLocation();
+        //firstLocation();
 
-        button.setOnClickListener(new View.OnClickListener() {
+        autoUpdateStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 autoUpdates();
             }
         });
+
+        currentLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                firstLocation();
+            }
+        });
+
+
     }
 
     private void autoUpdates() {
@@ -81,6 +91,8 @@ public class LocationPage extends AppCompatActivity {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+
+            System.out.println("should not be here");
             return;
         }
         locationClient.requestLocationUpdates(locationReq, locationCallback, null);
@@ -89,7 +101,6 @@ public class LocationPage extends AppCompatActivity {
 
     private void firstLocation(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            System.out.println("permissions woooo");
 
             locationClient.getCurrentLocation(100, null)
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -104,7 +115,7 @@ public class LocationPage extends AppCompatActivity {
                                 String loc = "latitude set to: " + res[0] + "longitude set to: " + res[1];
                                 System.out.println(loc);
                             } else {
-                                System.out.println("No location found booo");
+                                System.out.println("No location found, set in emulator");
                             }
 
                         }
@@ -112,7 +123,7 @@ public class LocationPage extends AppCompatActivity {
 
         } else {
             ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            System.out.println("no permissions booooo");
+            System.out.println("no permissions");
         }
     }
 
