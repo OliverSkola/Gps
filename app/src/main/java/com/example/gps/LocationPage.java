@@ -18,6 +18,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 public class LocationPage extends AppCompatActivity {
@@ -42,9 +43,14 @@ public class LocationPage extends AppCompatActivity {
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
         builder.setMinUpdateIntervalMillis(DEF_MIN_UPDATE);
+
+        builder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
+
         locationReq = builder.build();
 
         System.out.println("locationReq = " + locationReq.toString());
+
+        System.out.println("interval set to " + locationReq.getIntervalMillis());
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
 
@@ -56,7 +62,7 @@ public class LocationPage extends AppCompatActivity {
                 String longitude = String.valueOf(location.getLongitude());
                 String latitude = String.valueOf(location.getLatitude());
                 String[] res = {latitude, longitude};
-                String loc = "updated latitude set to: " + res[0] + "updated longitude set to: " + res[1];
+                String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1];
                 System.out.println(loc);
 
             }
