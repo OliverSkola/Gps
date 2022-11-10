@@ -48,10 +48,6 @@ public class LocationPage extends AppCompatActivity {
 
         locationReq = builder.build();
 
-        System.out.println("locationReq = " + locationReq.toString());
-
-        System.out.println("interval set to " + locationReq.getIntervalMillis());
-
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
 
         locationCallback = new LocationCallback() {
@@ -64,11 +60,8 @@ public class LocationPage extends AppCompatActivity {
                 String[] res = {latitude, longitude};
                 String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1];
                 System.out.println(loc);
-
             }
         };
-
-        //firstLocation();
 
         autoUpdateStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,15 +83,7 @@ public class LocationPage extends AppCompatActivity {
     private void autoUpdates() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-
-            System.out.println("should not be here");
+            ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
         locationClient.requestLocationUpdates(locationReq, locationCallback, null);
@@ -112,7 +97,6 @@ public class LocationPage extends AppCompatActivity {
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
-                            // If null, check emulator settings
                             if (location != null) {
 
                                 String longitude = String.valueOf(location.getLongitude());
