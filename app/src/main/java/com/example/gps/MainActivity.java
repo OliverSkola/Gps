@@ -16,6 +16,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        //LocationUpdate.Updater(this);
+        Button button = findViewById(R.id.bt_test);
+
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, LocationPage.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+
+
         button1=findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
