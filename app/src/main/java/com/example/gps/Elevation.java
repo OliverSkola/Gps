@@ -55,7 +55,7 @@ public class Elevation {
      * @param lon The longitude used for the request
      * @return The elevation above sea level in meters.
      */
-    private int reqElevation(String lat, String lon){
+    public static int reqElevation(String lat, String lon){
 
         //Google returns a JSON
         JSONObject jsonObject;

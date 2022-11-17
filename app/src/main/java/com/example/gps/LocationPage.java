@@ -57,8 +57,9 @@ public class LocationPage extends AppCompatActivity {
                 Location location = locationResult.getLastLocation();
                 String longitude = String.valueOf(location.getLongitude());
                 String latitude = String.valueOf(location.getLatitude());
+                //location.setAltitude(Elevation.reqElevation(latitude,longitude));
                 String[] res = {latitude, longitude};
-                String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1];
+                String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
                 System.out.println(loc);
             }
         };
