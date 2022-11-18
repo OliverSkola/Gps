@@ -9,7 +9,7 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button button1;
+//    private Button button1;
     private Button button2;
 
     @Override
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        button1=findViewById(R.id.button1);
+/*        button1=findViewById(R.id.button1);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+ */
         button2=findViewById(R.id.button2);
         button2.setOnClickListener(new View.OnClickListener() {
             @Override

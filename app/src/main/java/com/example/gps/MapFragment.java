@@ -1,10 +1,21 @@
 package com.example.gps;
 
 import static android.content.ContentValues.TAG;
+import static android.content.Context.MODE_PRIVATE;
 
+import static com.example.gps.LocationPage.LATITUDE;
+import static com.example.gps.LocationPage.LONGITUDE;
+import static com.example.gps.LocationPage.SHARED_COORDINATES;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -23,7 +34,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 
 
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements OnMapReadyCallback{
+    static LatLng latlng2;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -31,51 +43,51 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate (R.layout.fragment_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
+
 
         //initialize fragment
         SupportMapFragment suppportMapFragment = (SupportMapFragment)
-                getChildFragmentManager().findFragmentById(R.id.google_map);
+                getChildFragmentManager().findFragmentById(R.id.map);
 
         //async map
-        suppportMapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(@NonNull GoogleMap googleMap) {
-
-                LatLng latLng=new LatLng(57.7089, 11.9746);
-
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                        latLng, 13));
-
-                googleMap.addMarker(markerOptions);
-
-    /*            googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                    //when map is loaded
-                    @Override
-                    public void onMapClick(@NonNull LatLng latLng) {
-                        //when clicked om map
-                        //Initialize markerOptions
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        //Set position of Marker
-                        markerOptions.position(latLng);
-                        //Set title of marker
-                        markerOptions.title(latLng.latitude + " : "+ latLng.longitude);
-                        //remove all marker
-                        googleMap.clear();
-                        //Animationg to zoom the marker
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                                latLng, 10
-                        ));
-                        googleMap.addMarker(markerOptions);
-                    }
-                });
-     */
-            }
-        });
+        suppportMapFragment.getMapAsync(this);
 
         return view;
     }
+
+
+
+           GoogleMap map;
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        this.map=googleMap;
+        updateLocationUI();
+//                    getDeviceLocation();
+
+    }
+
+
+  private void updateLocationUI() {
+
+      if (map == null) {
+          return;
+      }
+      map.setMyLocationEnabled(true);
+      map.getUiSettings().setMyLocationButtonEnabled(true);
+
+
+      SharedPreferences coordinates = getContext().getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
+      String latitude = coordinates.getString("latitude","57.708870");
+      String longitude = coordinates.getString("longitude","11.974560");
+
+
+      LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+      map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+      map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+
+  }
+
 }

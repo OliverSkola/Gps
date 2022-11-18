@@ -3,11 +3,14 @@ package com.example.gps;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +24,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONException;
+
 public class LocationPage extends AppCompatActivity {
     //Högst 5000ms mellan uppdateringar
     public static final int DEF_UPDATE = 5000;
@@ -32,6 +37,11 @@ public class LocationPage extends AppCompatActivity {
     LocationRequest locationReq;
     //Används vid automatisk update
     LocationCallback locationCallback;
+
+    public static final String LATITUDE = "latitude";
+    public static final String LONGITUDE = "longitude";
+    public static final String SHARED_COORDINATES = "sharedPref";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +70,22 @@ public class LocationPage extends AppCompatActivity {
                 String[] res = {latitude, longitude};
                 String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1];
                 System.out.println(loc);
+
+
+                //saving coordinates in Shared Preferences as float
+                SharedPreferences sharedPreferences =getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                editor.putString(LATITUDE, latitude);
+                editor.putString(LONGITUDE, longitude);
+
+                editor.apply();
+
+                SportSession.Signal s= new SportSession.Signal(location.getLatitude(), location.getLongitude());
+                SportSession.track.addLast(s);
+
+//                System.out.println("\n\nLat: "+SportSession.track.getLast().latitude+" Long: "+SportSession.track.getLast().longitude);
+
             }
         };
 
@@ -77,6 +103,17 @@ public class LocationPage extends AppCompatActivity {
             }
         });
 
+
+
+         Button button3=findViewById(R.id.button3);
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LocationPage.this, MapDisplayer.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
     }
 
