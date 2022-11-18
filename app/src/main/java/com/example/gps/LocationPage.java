@@ -1,8 +1,6 @@
 package com.example.gps;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -21,11 +19,18 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+/**
+ * @author Ludvig Andersson
+ * LocationPage is used to get consistent coordinate updates.
+ * Through the class Elevation it also receives altitude data.
+ */
 public class LocationPage extends AppCompatActivity {
     //At most 5000ms between updates
     public static final int DEF_UPDATE = 5000;
     //At least 3000ms between updates
     public static final int DEF_MIN_UPDATE = 3000;
+    //When starting after stopping, old data is allowed to at most be 6000ms
+    public static final int DEF_MAX_AGE = 6000;
     //Used to find location
     FusedLocationProviderClient locationClient;
     //Config for locationClient
@@ -33,6 +38,10 @@ public class LocationPage extends AppCompatActivity {
     //Used when updating automatically
     LocationCallback locationCallback;
 
+    /**
+     * Required to use Elevation, since internet is not allowed to be used on main thread.
+     * Requires a Location for constructor, the uses that Location to find elevation and prints out coordinates and elevation.
+     */
     class InternetRunnable implements Runnable{
         Location location;
 
@@ -45,6 +54,7 @@ public class LocationPage extends AppCompatActivity {
             String longitude = String.valueOf(location.getLongitude());
             String latitude = String.valueOf(location.getLatitude());
             double elevation = Elevation.reqElevation(latitude,longitude);
+            //Elevation returns -9999 at errors
             if(elevation != -9999) {
                 location.setAltitude(elevation);
             }else{
@@ -67,6 +77,8 @@ public class LocationPage extends AppCompatActivity {
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
         builder.setMinUpdateIntervalMillis(DEF_MIN_UPDATE);
+
+        builder.setMaxUpdateAgeMillis(DEF_MAX_AGE);
 
         builder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
 
@@ -122,6 +134,9 @@ public class LocationPage extends AppCompatActivity {
 
     }
 
+    /**
+     * Strictly for testing gps, has no practical use
+     */
     private void firstLocation(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
