@@ -55,7 +55,7 @@ public class Elevation {
      * @param lon The longitude used for the request
      * @return The elevation above sea level in meters.
      */
-    public static int reqElevation(String lat, String lon){
+    public static double reqElevation(String lat, String lon){
 
         //Google returns a JSON
         JSONObject jsonObject;
@@ -72,7 +72,7 @@ public class Elevation {
 
         //Returns the elevation
         try {
-            return ((BigDecimal)((JSONObject) ((JSONArray) jsonObject.get("results")).get(0)).get("elevation")).intValue();
+            return (double) ((JSONObject) ((JSONArray) jsonObject.get("results")).get(0)).get("elevation");
         }catch (JSONException e){
             e.printStackTrace();
         }

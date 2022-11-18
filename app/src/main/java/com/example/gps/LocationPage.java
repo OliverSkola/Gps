@@ -22,16 +22,39 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 public class LocationPage extends AppCompatActivity {
-    //Högst 5000ms mellan uppdateringar
+    //At most 5000ms between updates
     public static final int DEF_UPDATE = 5000;
-    //Minst 3000ms mellan uppdateringar
+    //At least 3000ms between updates
     public static final int DEF_MIN_UPDATE = 3000;
-    //Hittar plats
+    //Used to find location
     FusedLocationProviderClient locationClient;
-    //Config för locationClient
+    //Config for locationClient
     LocationRequest locationReq;
-    //Används vid automatisk update
+    //Used when updating automatically
     LocationCallback locationCallback;
+
+    class InternetRunnable implements Runnable{
+        Location location;
+
+        InternetRunnable(Location location){
+            this.location = location;
+        }
+
+        @Override
+        public void run() {
+            String longitude = String.valueOf(location.getLongitude());
+            String latitude = String.valueOf(location.getLatitude());
+            double elevation = Elevation.reqElevation(latitude,longitude);
+            if(elevation != -9999) {
+                location.setAltitude(elevation);
+            }else{
+                //code to check altitude for previous location
+            }
+            String[] res = {latitude, longitude};
+            String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
+            System.out.println(loc);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +62,7 @@ public class LocationPage extends AppCompatActivity {
         setContentView(R.layout.activity_location);
         Button autoUpdateStart = findViewById(R.id.button);
         Button currentLocation = findViewById(R.id.button2);
+        Button stopLocation = findViewById(R.id.stopAuto);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
@@ -55,12 +79,8 @@ public class LocationPage extends AppCompatActivity {
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
-                String longitude = String.valueOf(location.getLongitude());
-                String latitude = String.valueOf(location.getLatitude());
-                //location.setAltitude(Elevation.reqElevation(latitude,longitude));
-                String[] res = {latitude, longitude};
-                String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
-                System.out.println(loc);
+                InternetRunnable runnable = new InternetRunnable(location);
+                new Thread(runnable).start();
             }
         };
 
@@ -68,6 +88,13 @@ public class LocationPage extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 autoUpdates();
+            }
+        });
+
+        stopLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopUpdates();
             }
         });
 
@@ -79,6 +106,10 @@ public class LocationPage extends AppCompatActivity {
         });
 
 
+    }
+
+    private void stopUpdates(){
+        locationClient.removeLocationUpdates(locationCallback);
     }
 
     private void autoUpdates() {
