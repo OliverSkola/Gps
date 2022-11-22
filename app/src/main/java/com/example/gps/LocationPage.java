@@ -4,8 +4,11 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,85 +33,38 @@ import java.util.Collections;
 import java.util.List;
 
 public class LocationPage extends AppCompatActivity {
-    //At most 5000ms between updates
-    public static final int DEF_UPDATE = 5000;
-    //At least 3000ms between updates
-    public static final int DEF_MIN_UPDATE = 3000;
-    //When starting after stopping, old data is allowed to at most be 6000ms
-    public static final int DEF_MAX_AGE = 6000;
-    //Used to find location
-    FusedLocationProviderClient locationClient;
-    //Config for locationClient
-    LocationRequest locationReq;
-    //Used when updating automatically
-    LocationCallback locationCallback;
 
-    Location secondLastLocation = null;
+    public static final int DEF_UPDATE = 5000; //At most 5000ms between updates
+    public static final int DEF_MIN_UPDATE = 3000; //At least 3000ms between updates
+    public static final int DEF_MAX_AGE = 6000; //When starting after stopping, old data is allowed to at most be 6000ms
 
+    FusedLocationProviderClient locationClient; //Used to find location
+    LocationRequest locationReq; //Config for locationClient
+    LocationCallback locationCallback; //Used when updating automatically
+
+    Location secondLastLocation = null; //required to calculate distance/speed
     List<Location> locations = Collections.synchronizedList(new ArrayList<Location>());
-
     List<Double> distances = Collections.synchronizedList(new ArrayList<Double>());
-
     List<Double> averageSpeeds = Collections.synchronizedList(new ArrayList<Double>());
 
-    /**
-     * Required to use Elevation, since internet is not allowed to be used on main thread.
-     * Requires a Location for constructor, the uses that Location to find elevation and prints out coordinates and elevation.
-     */
-    class InternetRunnable implements Runnable {
-        Location location;
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-        InternetRunnable(Location location) {
-            this.location = location;
-        }
+    private TextView testView;
 
-        @Override
-        public void run() {
-            String longitude = String.valueOf(location.getLongitude());
-            String latitude = String.valueOf(location.getLatitude());
-            //double elevation = Elevation.reqElevation(latitude, longitude);
-            //Elevation returns -9999 at errors
-            /*
-            if (elevation != -9999) {
-                location.setAltitude(elevation);
-            } else if(secondLastLocation != null) {
-                location.setAltitude(secondLastLocation.getAltitude());
-            }
-            */
-            if (secondLastLocation != null) {
-                double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation);
-                averageSpeeds.add(speedBetween);
-                System.out.println("speed = " + speedBetween);
-                double distance = location.distanceTo(secondLastLocation);
-                distances.add(distance);
-                double totalDistance = 0;
-                for (int i = 0; i < distances.size(); i++) {
-                    totalDistance = distances.get(i);
-                }
-                double averageSpeedPass = 0;
-                for(int i = 0; i < averageSpeeds.size(); i++){
-                    averageSpeedPass += averageSpeeds.get(i);
-                }
-                System.out.println("average speed pass = " + averageSpeedPass);
-                System.out.println("total distance pass = " + totalDistance);
-            }
-            locations.add(location);
-            String[] res = {latitude, longitude};
-            String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
-            System.out.println(loc);
+    private Button autoUpdateStart;
+    private Button currentLocation;
+    private Button stopLocation;
 
-            secondLastLocation = location;
-        }
-    }
-
+    private double totalDistance = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
-        Button autoUpdateStart = findViewById(R.id.button);
-        Button currentLocation = findViewById(R.id.button2);
-        Button stopLocation = findViewById(R.id.stopAuto);
+        autoUpdateStart = findViewById(R.id.startAuto);
+        currentLocation = findViewById(R.id.locationTest);
+        stopLocation = findViewById(R.id.stopAuto);
+        testView = findViewById(R.id.textViewTesting);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
@@ -168,6 +124,68 @@ public class LocationPage extends AppCompatActivity {
 
     }
 
+    /**
+     * Required to use Elevation, since internet is not allowed to be used on main thread.
+     * Requires a Location for constructor, then uses that Location to find elevation and prints out coordinates and elevation.
+     */
+    class InternetRunnable implements Runnable {
+        Location location;
+
+        InternetRunnable(Location location) {
+            this.location = location;
+        }
+
+        @Override
+        public void run() {
+            locations.add(location);
+            String longitude = String.valueOf(location.getLongitude());
+            String latitude = String.valueOf(location.getLatitude());
+            //Temporarily removed code, don't want to waste lookups for elevation for no reason when testing other things
+            /*
+            //double elevation = Elevation.reqElevation(latitude, longitude);
+            //Elevation returns -9999 at errors
+
+            if (elevation != -9999) {
+                location.setAltitude(elevation);
+            } else if(secondLastLocation != null) { //if elevation data fails for some reason, keep same as before
+                location.setAltitude(secondLastLocation.getAltitude());
+            }
+            double angle = Angles.getAngle(location, secondLastLocation);
+
+            */
+
+            if (secondLastLocation != null) {
+                double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation);
+                averageSpeeds.add(speedBetween);
+                System.out.println("current speed = " + speedBetween);
+
+                double distance = location.distanceTo(secondLastLocation);
+                distances.add(distance);
+                totalDistance += distance;
+
+                System.out.println("average speed pass = " + averageSpeedPass());
+                System.out.println("total distance pass = " + totalDistance);
+
+                //required to use in handler
+                final double finalTotalDistance = totalDistance;
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        testView.setText("totalDistance = " + finalTotalDistance);
+                    }
+                });
+            }
+
+            String[] res = {latitude, longitude};
+            String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
+            System.out.println(loc);
+
+
+            //Always do this last
+            secondLastLocation = location;
+        }
+    }
+
     private void stopUpdates() {
         locationClient.removeLocationUpdates(locationCallback);
     }
@@ -224,5 +242,10 @@ public class LocationPage extends AppCompatActivity {
         double distance = location1.distanceTo(location2);
 
         return (double) ((distance) / ((location1.getElapsedRealtimeNanos() * Math.pow(10, -9) - location2.getElapsedRealtimeNanos() * Math.pow(10, -9))));
+    }
+
+    private double averageSpeedPass(){
+        double timeDifference = locations.get(locations.size()-1).getElapsedRealtimeNanos() * Math.pow(10, -9) - locations.get(0).getElapsedRealtimeNanos() * Math.pow(10, -9);
+        return totalDistance/timeDifference;
     }
 }

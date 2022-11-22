@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/startAuto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start auto"
@@ -19,7 +19,7 @@
         />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/locationTest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Try current"
@@ -42,4 +42,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.661" />
+
+    <TextView
+        android:id="@+id/textViewTesting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="I am text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.4" />
 </androidx.constraintlayout.widget.ConstraintLayout>
