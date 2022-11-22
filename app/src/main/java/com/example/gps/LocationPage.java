@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LocationPage extends AppCompatActivity {
@@ -42,14 +43,22 @@ public class LocationPage extends AppCompatActivity {
     //Used when updating automatically
     LocationCallback locationCallback;
 
+    Location secondLastLocation = null;
+
+    List<Location> locations = Collections.synchronizedList(new ArrayList<Location>());
+
+    List<Double> distances = Collections.synchronizedList(new ArrayList<Double>());
+
+    List<Double> averageSpeeds = Collections.synchronizedList(new ArrayList<Double>());
+
     /**
      * Required to use Elevation, since internet is not allowed to be used on main thread.
      * Requires a Location for constructor, the uses that Location to find elevation and prints out coordinates and elevation.
      */
-    class InternetRunnable implements Runnable{
+    class InternetRunnable implements Runnable {
         Location location;
 
-        InternetRunnable(Location location){
+        InternetRunnable(Location location) {
             this.location = location;
         }
 
@@ -57,21 +66,41 @@ public class LocationPage extends AppCompatActivity {
         public void run() {
             String longitude = String.valueOf(location.getLongitude());
             String latitude = String.valueOf(location.getLatitude());
-            double elevation = Elevation.reqElevation(latitude,longitude);
+            //double elevation = Elevation.reqElevation(latitude, longitude);
             //Elevation returns -9999 at errors
-            if(elevation != -9999) {
+            /*
+            if (elevation != -9999) {
                 location.setAltitude(elevation);
-            }else{
-                //code to check altitude for previous location
+            } else if(secondLastLocation != null) {
+                location.setAltitude(secondLastLocation.getAltitude());
             }
+            */
+            if (secondLastLocation != null) {
+                double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation);
+                averageSpeeds.add(speedBetween);
+                System.out.println("speed = " + speedBetween);
+                double distance = location.distanceTo(secondLastLocation);
+                distances.add(distance);
+                double totalDistance = 0;
+                for (int i = 0; i < distances.size(); i++) {
+                    totalDistance = distances.get(i);
+                }
+                double averageSpeedPass = 0;
+                for(int i = 0; i < averageSpeeds.size(); i++){
+                    averageSpeedPass += averageSpeeds.get(i);
+                }
+                System.out.println("average speed pass = " + averageSpeedPass);
+                System.out.println("total distance pass = " + totalDistance);
+            }
+            locations.add(location);
             String[] res = {latitude, longitude};
             String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
             System.out.println(loc);
+
+            secondLastLocation = location;
         }
     }
-    Location secondLastLocation = null;
 
-    List<Location> locations = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +129,8 @@ public class LocationPage extends AppCompatActivity {
                 Location location = locationResult.getLastLocation();
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
-                //locations.add(location);
+
+                /*
                 String longitude = String.valueOf(location.getLongitude());
                 String latitude = String.valueOf(location.getLatitude());
                 String[] res = {latitude, longitude};
@@ -110,6 +140,7 @@ public class LocationPage extends AppCompatActivity {
                 if(locations.size() > 1) {
                     System.out.println("hastighet " + averageSpeedLastCoordinates(secondLastLocation, location));
                 }
+                 */
             }
         };
 
@@ -137,7 +168,7 @@ public class LocationPage extends AppCompatActivity {
 
     }
 
-    private void stopUpdates(){
+    private void stopUpdates() {
         locationClient.removeLocationUpdates(locationCallback);
     }
 
@@ -154,7 +185,7 @@ public class LocationPage extends AppCompatActivity {
     /**
      * Strictly for testing gps, has no practical use
      */
-    private void firstLocation(){
+    private void firstLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationClient.getCurrentLocation(100, null)
@@ -163,7 +194,7 @@ public class LocationPage extends AppCompatActivity {
                         public void onSuccess(Location location) {
                             if (location != null) {
                                 //adds secondlast if there are more than one point
-                                if(locations.size() > 1){
+                                if (locations.size() > 1) {
                                     secondLastLocation = locations.get(locations.size() - 1);
                                 }
 
@@ -189,10 +220,9 @@ public class LocationPage extends AppCompatActivity {
     }
 
     //calculates average speed between two points
-    private float averageSpeedLastCoordinates(Location location1, Location location2){
-        float[] results = new float[1];
-        Location.distanceBetween(location1.getLatitude(), location1.getLongitude(), location2.getLatitude(), location2.getLongitude(), results);
+    private double averageSpeedLastCoordinates(Location location1, Location location2) {
+        double distance = location1.distanceTo(location2);
 
-        return (float) ((results[results.length - 1]) / ((location2.getElapsedRealtimeNanos() * Math.pow(10, 9) - location1.getElapsedRealtimeNanos() * Math.pow(10, 9))));
+        return (double) ((distance) / ((location1.getElapsedRealtimeNanos() * Math.pow(10, -9) - location2.getElapsedRealtimeNanos() * Math.pow(10, -9))));
     }
 }
