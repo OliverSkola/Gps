@@ -24,6 +24,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
  * LocationPage is used to get consistent coordinate updates.
  * Through the class Elevation it also receives altitude data.
  */
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class LocationPage extends AppCompatActivity {
     //At most 5000ms between updates
     public static final int DEF_UPDATE = 5000;
@@ -65,6 +69,9 @@ public class LocationPage extends AppCompatActivity {
             System.out.println(loc);
         }
     }
+    Location secondLastLocation = null;
+
+    List<Location> locations = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +100,16 @@ public class LocationPage extends AppCompatActivity {
                 Location location = locationResult.getLastLocation();
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
+                //locations.add(location);
+                String longitude = String.valueOf(location.getLongitude());
+                String latitude = String.valueOf(location.getLatitude());
+                String[] res = {latitude, longitude};
+                String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1]  + "locationsize:" + locations.size();
+                System.out.println(loc);
+                //should only be able to calculate average speed if there are two points
+                if(locations.size() > 1) {
+                    System.out.println("hastighet " + averageSpeedLastCoordinates(secondLastLocation, location));
+                }
             }
         };
 
@@ -145,16 +162,23 @@ public class LocationPage extends AppCompatActivity {
                         @Override
                         public void onSuccess(Location location) {
                             if (location != null) {
+                                //adds secondlast if there are more than one point
+                                if(locations.size() > 1){
+                                    secondLastLocation = locations.get(locations.size() - 1);
+                                }
 
                                 String longitude = String.valueOf(location.getLongitude());
                                 String latitude = String.valueOf(location.getLatitude());
                                 String[] res = {latitude, longitude};
-                                String loc = "latitude set to: " + res[0] + "longitude set to: " + res[1];
+                                String loc = "latitude set to: " + res[0] + "longitude set to: " + res[1] + " locationsize" + locations.size();
                                 System.out.println(loc);
+
+                                //adds current location to list
+                                locations.add(location);
+
                             } else {
                                 System.out.println("No location found, set in emulator");
                             }
-
                         }
                     });
 
@@ -164,4 +188,11 @@ public class LocationPage extends AppCompatActivity {
         }
     }
 
+    //calculates average speed between two points
+    private float averageSpeedLastCoordinates(Location location1, Location location2){
+        float[] results = new float[1];
+        Location.distanceBetween(location1.getLatitude(), location1.getLongitude(), location2.getLatitude(), location2.getLongitude(), results);
+
+        return (float) ((results[results.length - 1]) / ((location2.getElapsedRealtimeNanos() * Math.pow(10, 9) - location1.getElapsedRealtimeNanos() * Math.pow(10, 9))));
+    }
 }
