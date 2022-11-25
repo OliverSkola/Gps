@@ -86,17 +86,6 @@ public class LocationPage extends AppCompatActivity {
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
 
-                /*
-                String longitude = String.valueOf(location.getLongitude());
-                String latitude = String.valueOf(location.getLatitude());
-                String[] res = {latitude, longitude};
-                String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1]  + "locationsize:" + locations.size();
-                System.out.println(loc);
-                //should only be able to calculate average speed if there are two points
-                if(locations.size() > 1) {
-                    System.out.println("hastighet " + averageSpeedLastCoordinates(secondLastLocation, location));
-                }
-                 */
             }
         };
 
@@ -186,10 +175,16 @@ public class LocationPage extends AppCompatActivity {
         }
     }
 
+    /**
+     * Stops the automatic updates
+     */
     private void stopUpdates() {
         locationClient.removeLocationUpdates(locationCallback);
     }
 
+    /**
+     * Starts automatic updates, to add things to be done during updates see InternetRunnable
+     */
     private void autoUpdates() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -244,6 +239,10 @@ public class LocationPage extends AppCompatActivity {
         return (double) ((distance) / ((location1.getElapsedRealtimeNanos() * Math.pow(10, -9) - location2.getElapsedRealtimeNanos() * Math.pow(10, -9))));
     }
 
+    /**
+     * Calculates the average speed from the time of the first location to the time of the latest location
+     * @return Average speed in m/s for the whole pass
+     */
     private double averageSpeedPass(){
         double timeDifference = locations.get(locations.size()-1).getElapsedRealtimeNanos() * Math.pow(10, -9) - locations.get(0).getElapsedRealtimeNanos() * Math.pow(10, -9);
         return totalDistance/timeDifference;
