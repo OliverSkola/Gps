@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,29 +48,69 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
 
         //initialize fragment
-        SupportMapFragment suppportMapFragment = (SupportMapFragment)
-                getChildFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+       // initialize map istället för fragment?
+
+ //       GoogleMap map = supportMapFragment.getMap();
+
 
         //async map
-        suppportMapFragment.getMapAsync(this);
+        supportMapFragment.getMapAsync(this);
 
         return view;
     }
 
 
-
-           GoogleMap map;
+    GoogleMap map;
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.map=googleMap;
-        updateLocationUI();
+
+        SharedPreferences coordinates = getContext().getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
+        String latitude = coordinates.getString("latitude","57.708870");
+        String longitude = coordinates.getString("longitude","11.974560");
+
+        map.setMyLocationEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(true);
+        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+
+//        updateLocationUI(latitude,longitude);
 //                    getDeviceLocation();
 
     }
 
 
-  private void updateLocationUI() {
+    public  void updateLocationUI(String lat, String lon) {
+        if (map == null) {
+            return;
+        }
+        map.setMyLocationEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(true);
+
+/*
+        SharedPreferences coordinates = getContext().getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
+        String latitude = coordinates.getString("latitude","57.708870");
+        String longitude = coordinates.getString("longitude","11.974560");
+ */
+
+
+        System.out.println("\n\nLatitude: "+lat+"   Longitude: "+lon);
+
+        LatLng latlng = new LatLng(Double.parseDouble(lat), Double.parseDouble(lon));
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+
+    }
+
+
+/* only static
+    public static void updateLocationUI() {
 
       if (map == null) {
           return;
@@ -89,5 +130,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
       map.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
 
   }
+
+ */
 
 }

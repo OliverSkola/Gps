@@ -43,8 +43,10 @@ public class LocationPage extends AppCompatActivity {
     public static final String SHARED_COORDINATES = "sharedPref";
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
         Button autoUpdateStart = findViewById(R.id.button);
@@ -59,6 +61,8 @@ public class LocationPage extends AppCompatActivity {
         locationReq = builder.build();
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
+
+        MapFragment map=new MapFragment();
 
         locationCallback = new LocationCallback() {
             @Override
@@ -81,6 +85,8 @@ public class LocationPage extends AppCompatActivity {
 
                 editor.apply();
 
+
+                map.updateLocationUI(latitude, longitude);
                 SportSession.Signal s= new SportSession.Signal(location.getLatitude(), location.getLongitude());
                 SportSession.track.addLast(s);
 
@@ -111,7 +117,7 @@ public class LocationPage extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(LocationPage.this, MapDisplayer.class);
                 startActivity(intent);
-                finish();
+//                finish();
             }
         });
 
@@ -124,7 +130,6 @@ public class LocationPage extends AppCompatActivity {
             return;
         }
         locationClient.requestLocationUpdates(locationReq, locationCallback, null);
-
     }
 
     private void firstLocation(){
