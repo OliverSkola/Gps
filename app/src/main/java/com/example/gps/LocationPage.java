@@ -152,20 +152,21 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             String longitude = String.valueOf(location.getLongitude());
             String latitude = String.valueOf(location.getLatitude());
             //Temporarily removed code, don't want to waste lookups for elevation for no reason when testing other things
-            /*
-            //double elevation = Elevation.reqElevation(latitude, longitude);
-            //Elevation returns -9999 at errors
+/*
+            double elevation = Elevation.reqElevation(latitude, longitude);
 
+            //Elevation returns -9999 at errors
             if (elevation != -9999) {
                 location.setAltitude(elevation);
             } else if(secondLastLocation != null) { //if elevation data fails for some reason, keep same as before
                 location.setAltitude(secondLastLocation.getAltitude());
             }
-            double angle = Angles.getAngle(location, secondLastLocation);
-
-            */
+            System.out.println("current elevation = " + location.getAltitude());
+*/
 
             if (secondLastLocation != null) {
+                double angle = Angles.getAngle(location, secondLastLocation);
+                System.out.println("current angle = " + angle);
                 double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation);
                 averageSpeeds.add(speedBetween);
                 System.out.println("current speed = " + speedBetween);
