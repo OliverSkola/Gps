@@ -1,6 +1,8 @@
 package com.example.gps;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -20,6 +22,12 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
@@ -32,7 +40,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class LocationPage extends AppCompatActivity {
+
+public class LocationPage extends AppCompatActivity implements OnMapReadyCallback {
 
     public static final int DEF_UPDATE = 5000; //At most 5000ms between updates
     public static final int DEF_MIN_UPDATE = 3000; //At least 3000ms between updates
@@ -57,8 +66,17 @@ public class LocationPage extends AppCompatActivity {
 
     private double totalDistance = 0;
 
+    public GoogleMap locationMap;
+
+    public static final String LATITUDE = "latitude";
+    public static final String LONGITUDE = "longitude";
+    public static final String SHARED_COORDINATES = "sharedPref";
+
+    List<Location> locations = Collections.synchronizedList(new ArrayList<Location>());
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
         autoUpdateStart = findViewById(R.id.startAuto);
@@ -78,6 +96,12 @@ public class LocationPage extends AppCompatActivity {
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
 
+        SupportMapFragment mapFrag = new SupportMapFragment();
+
+        mapFrag = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFrag.getMapAsync(this);
+
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -86,6 +110,7 @@ public class LocationPage extends AppCompatActivity {
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
 
+                mapUpdater();
             }
         };
 
@@ -110,6 +135,17 @@ public class LocationPage extends AppCompatActivity {
             }
         });
 
+
+
+         Button button3=findViewById(R.id.button3);
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LocationPage.this, MapDisplayer.class);
+                startActivity(intent);
+//                finish();
+            }
+        });
 
     }
 
@@ -192,7 +228,6 @@ public class LocationPage extends AppCompatActivity {
             return;
         }
         locationClient.requestLocationUpdates(locationReq, locationCallback, null);
-
     }
 
     /**
@@ -232,6 +267,7 @@ public class LocationPage extends AppCompatActivity {
         }
     }
 
+
     //calculates average speed between two points
     private double averageSpeedLastCoordinates(Location location1, Location location2) {
         double distance = location1.distanceTo(location2);
@@ -246,5 +282,51 @@ public class LocationPage extends AppCompatActivity {
     private double averageSpeedPass(){
         double timeDifference = locations.get(locations.size()-1).getElapsedRealtimeNanos() * Math.pow(10, -9) - locations.get(0).getElapsedRealtimeNanos() * Math.pow(10, -9);
         return totalDistance/timeDifference;
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        locationMap = googleMap;
+        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
+        String latitude = coordinates.getString("latitude","57.708870");
+        String longitude = coordinates.getString("longitude","11.974560");
+
+        locationMap.setMyLocationEnabled(true);
+        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
+        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+
+    }
+
+    public void mapUpdater(){
+        if (locationMap == null) {
+            return;
+        }
+        locationMap.setMyLocationEnabled(true);
+        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+
+        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
+        String latitude = coordinates.getString("latitude","57.708870");
+        String longitude = coordinates.getString("longitude","11.974560");
+
+
+
+
+        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+
+        /*
+        locationMap.setMyLocationEnabled(true);
+        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
+        if(locations.size() > 0){
+            Location lastLocation = locations.get(locations.size()-1);
+            LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+        }else{
+            System.out.println("location.size still 0");
+        }*/
     }
 }
