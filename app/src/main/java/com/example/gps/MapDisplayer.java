@@ -13,7 +13,7 @@ public class MapDisplayer extends AppCompatActivity {
         setContentView(R.layout.activity_map_displayer);
 
         //initialize fragment
-        Fragment fragment = new MapFragment();
+        Fragment fragment = new OurMapFragment();
 
         //Open fragment
         getSupportFragmentManager()
