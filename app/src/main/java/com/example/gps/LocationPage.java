@@ -72,8 +72,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     public static final String LONGITUDE = "longitude";
     public static final String SHARED_COORDINATES = "sharedPref";
 
-    List<Location> locations = Collections.synchronizedList(new ArrayList<Location>());
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -110,7 +108,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
 
-                mapUpdater();
+
             }
         };
 
@@ -132,18 +130,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 firstLocation();
-            }
-        });
-
-
-
-         Button button3=findViewById(R.id.button3);
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LocationPage.this, MapDisplayer.class);
-                startActivity(intent);
-//                finish();
             }
         });
 
@@ -196,6 +182,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        mapUpdater();
                         testView.setText("totalDistance = " + finalTotalDistance);
                     }
                 });
@@ -279,13 +266,16 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
      * Calculates the average speed from the time of the first location to the time of the latest location
      * @return Average speed in m/s for the whole pass
      */
-    private double averageSpeedPass(){
-        double timeDifference = locations.get(locations.size()-1).getElapsedRealtimeNanos() * Math.pow(10, -9) - locations.get(0).getElapsedRealtimeNanos() * Math.pow(10, -9);
-        return totalDistance/timeDifference;
-
+    private double averageSpeedPass() {
+        double timeDifference = locations.get(locations.size() - 1).getElapsedRealtimeNanos() * Math.pow(10, -9) - locations.get(0).getElapsedRealtimeNanos() * Math.pow(10, -9);
+        return totalDistance / timeDifference;
+    }
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         locationMap = googleMap;
+        locationMap.setMyLocationEnabled(true);
+        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
+        /*
         SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
         String latitude = coordinates.getString("latitude","57.708870");
         String longitude = coordinates.getString("longitude","11.974560");
@@ -294,7 +284,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         locationMap.getUiSettings().setMyLocationButtonEnabled(true);
         LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
 
+
         locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+        */
 
     }
 
@@ -304,6 +296,18 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         }
         locationMap.setMyLocationEnabled(true);
         locationMap.getUiSettings().setMyLocationButtonEnabled(true);
+        if(locations.size() > 0){
+            Location lastLocation = locations.get(locations.size()-1);
+            LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
+            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+        }else{
+            System.out.println("location.size still 0");
+        }
+
+        /*
+        locationMap.setMyLocationEnabled(true);
+        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
 
 
         SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
@@ -316,17 +320,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
 
         locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-
-        /*
-        locationMap.setMyLocationEnabled(true);
-        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        if(locations.size() > 0){
-            Location lastLocation = locations.get(locations.size()-1);
-            LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
-        }else{
-            System.out.println("location.size still 0");
-        }*/
+*/
     }
 }
