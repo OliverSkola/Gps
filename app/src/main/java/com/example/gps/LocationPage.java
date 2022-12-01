@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -63,10 +64,16 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     private Button autoUpdateStart;
     private Button currentLocation;
     private Button stopLocation;
+    private Button swapperButton;
+
+    private boolean mapShown = false;
+    private FragmentManager fragman;
 
     private double totalDistance = 0;
 
     public GoogleMap locationMap;
+    private SupportMapFragment mapFrag;
+    private ButtonFragment buttonFrag;
 
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
@@ -77,11 +84,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
-        /*
-        autoUpdateStart = findViewById(R.id.startAuto);
-        currentLocation = findViewById(R.id.locationTest);
-        stopLocation = findViewById(R.id.stopAuto);*/
-        testView = findViewById(R.id.textViewTesting);
+        swapperButton = findViewById(R.id.swapper);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
@@ -95,17 +98,16 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
 
-        SupportMapFragment mapFrag = new SupportMapFragment();
-
+        mapFrag = new SupportMapFragment();
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
-        mapFrag.getView().setVisibility(View.GONE);
-/*
-        ButtonFragment buttonFrag = new ButtonFragment();
+        mapFrag.getView().setVisibility(View.INVISIBLE);
+
+        buttonFrag = new ButtonFragment();
         buttonFrag = (ButtonFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.buttonsFrag);
-        */
+                .findFragmentById(R.id.buttons);
+
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -115,29 +117,30 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 new Thread(runnable).start();
             }
         };
-/*
-        autoUpdateStart.setOnClickListener(new View.OnClickListener() {
+
+        swapperButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                autoUpdates();
+                if(mapShown){
+                    mapShown = false;
+                    fragSwap();
+                }else{
+                    mapShown = true;
+                    fragSwap();
+                }
             }
         });
 
-        stopLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopUpdates();
-            }
-        });
+    }
 
-        currentLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                firstLocation();
-            }
-        });
-        */
-
+    private void fragSwap(){
+        if(mapShown){
+            mapFrag.getView().setVisibility(View.VISIBLE);
+            buttonFrag.getView().setVisibility(View.INVISIBLE);
+        }else{
+            mapFrag.getView().setVisibility(View.INVISIBLE);
+            buttonFrag.getView().setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -189,7 +192,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
                         mapUpdater();
-                        testView.setText("totalDistance = " + finalTotalDistance);
                     }
                 });
             }
@@ -207,7 +209,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Stops the automatic updates
      */
-    private void stopUpdates() {
+    public void stopUpdates() {
         locationClient.removeLocationUpdates(locationCallback);
     }
 

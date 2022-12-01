@@ -14,7 +14,7 @@ import android.widget.Button;
  * Use the {@link ButtonFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ButtonFragment extends Fragment implements View.OnClickListener {
+public class ButtonFragment extends Fragment {
 
     private Button autoUpdateStart;
     private Button currentLocation;
@@ -24,6 +24,7 @@ public class ButtonFragment extends Fragment implements View.OnClickListener {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -67,14 +68,36 @@ public class ButtonFragment extends Fragment implements View.OnClickListener {
         View view = inflater.inflate(R.layout.fragment_buttons, container, false);
         autoUpdateStart = view.findViewById(R.id.startAuto);
 
+        autoUpdateStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((LocationPage) getActivity()).autoUpdates();
+                System.out.println("I have been pressed");
+            }
+        });
+
+        stopLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((LocationPage) getActivity()).stopUpdates();
+            }
+        });
+
+
         return view;
     }
-
+    /*
     @Override
     public void onClick(View view) {
         switch(view.getId()){
             case R.id.startAuto:
                 ((LocationPage) getActivity()).autoUpdates();
+                System.out.println("I have been pressed");
+                break;
+            default:
+                System.out.println("why here?");
+
         }
     }
+     */
 }

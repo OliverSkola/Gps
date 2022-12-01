@@ -12,21 +12,29 @@
         android:layout_gravity="center"
         android:layout_height="match_parent"
         />
-
+<!--
     <FrameLayout
-        android:id="@+id/buttonsFrag"
+        android:id="@+id/mainFrag"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
-    <TextView
-        android:id="@+id/textViewTesting"
+-->
+    <fragment
+        android:id="@+id/buttons"
+        android:name="com.example.gps.ButtonFragment"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:layout_height="match_parent"
+        />
+
+    <Button
+        android:id="@+id/swapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:text="No frags huh?"
-        app:layout_constraintBottom_toTopOf="parent"
+        android:text="Swap it"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.49"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.487"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
