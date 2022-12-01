@@ -28,6 +28,9 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
@@ -71,6 +74,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
     public static final String SHARED_COORDINATES = "sharedPref";
+
+ //   private List<Polyline> pathPoints;
+//    private List<LatLng> pathPointsLatLng = new List<LatLng>() {};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -302,25 +308,37 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
             //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+            addLatestPolyline();
+
         }else{
             System.out.println("location.size still 0");
         }
-
-        /*
-        locationMap.setMyLocationEnabled(true);
-        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-
-        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
-        String latitude = coordinates.getString("latitude","57.708870");
-        String longitude = coordinates.getString("longitude","11.974560");
-
-
-
-
-        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-
-        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-*/
     }
+
+
+
+ //   void addLatestPolyline(List<Location> locations){
+        void addLatestPolyline(){
+        if ((locations != null) && (locations.size()>1)) {
+            double lat= locations.get(locations.size() - 1).getLatitude();
+            double lng= locations.get(locations.size() - 1).getLongitude();
+            LatLng lastLatlng= new LatLng(lat, lng);
+            double prelat= locations.get(locations.size() - 2).getLatitude();
+            double prelng= locations.get(locations.size() - 2).getLongitude();
+            LatLng prelastLatlng= new LatLng(prelat, prelng);
+
+
+            PolylineOptions polyOpt = new PolylineOptions()
+                    .color(0x3ED6AE)
+                    .width(5)
+                    .add(prelastLatlng)
+                    .add(lastLatlng);
+//                    .add(new LatLng(57.7089,11.9746))
+//                    .add(new LatLng(57.7072,11.9715))
+//                    .add(new LatLng(57.7068,11.9702));
+
+                locationMap.addPolyline(polyOpt);
+        }
+    }
+
 }
