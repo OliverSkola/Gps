@@ -59,19 +59,13 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private TextView testView;
-
-    private Button autoUpdateStart;
-    private Button currentLocation;
-    private Button stopLocation;
     private Button swapperButton;
 
     private boolean mapShown = false;
-    private FragmentManager fragman;
 
     private double totalDistance = 0;
 
-    public GoogleMap locationMap;
+    private GoogleMap locationMap;
     private SupportMapFragment mapFrag;
     private ButtonFragment buttonFrag;
 
@@ -211,6 +205,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void stopUpdates() {
         locationClient.removeLocationUpdates(locationCallback);
+        System.out.println("training over");
     }
 
     /**
@@ -224,44 +219,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         }
         locationClient.requestLocationUpdates(locationReq, locationCallback, null);
     }
-
-    /**
-     * Strictly for testing gps, has no practical use
-     */
-    private void firstLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-            locationClient.getCurrentLocation(100, null)
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
-                                //adds secondlast if there are more than one point
-                                if (locations.size() > 1) {
-                                    secondLastLocation = locations.get(locations.size() - 1);
-                                }
-
-                                String longitude = String.valueOf(location.getLongitude());
-                                String latitude = String.valueOf(location.getLatitude());
-                                String[] res = {latitude, longitude};
-                                String loc = "latitude set to: " + res[0] + "longitude set to: " + res[1] + " locationsize" + locations.size();
-                                System.out.println(loc);
-
-                                //adds current location to list
-                                locations.add(location);
-
-                            } else {
-                                System.out.println("No location found, set in emulator");
-                            }
-                        }
-                    });
-
-        } else {
-            ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            System.out.println("no permissions");
-        }
-    }
-
 
     //calculates average speed between two points
     private double averageSpeedLastCoordinates(Location location1, Location location2) {
@@ -283,19 +240,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         locationMap = googleMap;
         locationMap.setMyLocationEnabled(true);
         locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        /*
-        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
-        String latitude = coordinates.getString("latitude","57.708870");
-        String longitude = coordinates.getString("longitude","11.974560");
-
-        locationMap.setMyLocationEnabled(true);
-        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-
-
-        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-        */
-
     }
 
     public void mapUpdater(){
@@ -308,26 +252,8 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             Location lastLocation = locations.get(locations.size()-1);
             LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
         }else{
             System.out.println("location.size still 0");
         }
-
-        /*
-        locationMap.setMyLocationEnabled(true);
-        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-
-        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
-        String latitude = coordinates.getString("latitude","57.708870");
-        String longitude = coordinates.getString("longitude","11.974560");
-
-
-
-
-        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-
-        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-*/
     }
 }

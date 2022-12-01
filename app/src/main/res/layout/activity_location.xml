@@ -12,13 +12,7 @@
         android:layout_gravity="center"
         android:layout_height="match_parent"
         />
-<!--
-    <FrameLayout
-        android:id="@+id/mainFrag"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
--->
+
     <fragment
         android:id="@+id/buttons"
         android:name="com.example.gps.ButtonFragment"
