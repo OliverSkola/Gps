@@ -77,9 +77,10 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
+        /*
         autoUpdateStart = findViewById(R.id.startAuto);
         currentLocation = findViewById(R.id.locationTest);
-        stopLocation = findViewById(R.id.stopAuto);
+        stopLocation = findViewById(R.id.stopAuto);*/
         testView = findViewById(R.id.textViewTesting);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
@@ -99,7 +100,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
-
+        mapFrag.getView().setVisibility(View.GONE);
+/*
+        ButtonFragment buttonFrag = new ButtonFragment();
+        buttonFrag = (ButtonFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.buttonsFrag);
+        */
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -107,11 +113,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 Location location = locationResult.getLastLocation();
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
-
-
             }
         };
-
+/*
         autoUpdateStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -132,6 +136,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 firstLocation();
             }
         });
+        */
 
     }
 
@@ -209,7 +214,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Starts automatic updates, to add things to be done during updates see InternetRunnable
      */
-    private void autoUpdates() {
+    public void autoUpdates() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
