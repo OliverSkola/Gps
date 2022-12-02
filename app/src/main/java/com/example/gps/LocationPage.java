@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,6 +30,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
@@ -253,12 +255,10 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
             //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
-            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
             addLatestPolyline();
         }else{
             System.out.println("location.size still 0");
         }
-    }
     }
 
 
@@ -266,23 +266,19 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
  //   void addLatestPolyline(List<Location> locations){
         void addLatestPolyline(){
         if ((locations != null) && (locations.size()>1)) {
-            double lat= locations.get(locations.size() - 1).getLatitude();
-            double lng= locations.get(locations.size() - 1).getLongitude();
-            LatLng lastLatlng= new LatLng(lat, lng);
-            double prelat= locations.get(locations.size() - 2).getLatitude();
-            double prelng= locations.get(locations.size() - 2).getLongitude();
-            LatLng prelastLatlng= new LatLng(prelat, prelng);
+            LatLng lastLatlng= new LatLng(
+                            locations.get(locations.size() - 1).getLatitude(),
+                            locations.get(locations.size() - 1).getLongitude());
+            LatLng prelastLatlng= new LatLng(
+                            locations.get(locations.size() - 2).getLatitude(),
+                            locations.get(locations.size() - 2).getLongitude());
 
 
             PolylineOptions polyOpt = new PolylineOptions()
-                    .color(0x3ED6AE)
-                    .width(5)
+                    .color(Color.rgb(62, 214, 174))
+                    .width(15f)
                     .add(prelastLatlng)
                     .add(lastLatlng);
-//                    .add(new LatLng(57.7089,11.9746))
-//                    .add(new LatLng(57.7072,11.9715))
-//                    .add(new LatLng(57.7068,11.9702));
-
                 locationMap.addPolyline(polyOpt);
         }
     }
