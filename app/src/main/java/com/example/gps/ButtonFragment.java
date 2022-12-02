@@ -38,7 +38,6 @@ public class ButtonFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 ((LocationPage) getActivity()).autoUpdates();
-                System.out.println("I have been pressed");
             }
         });
 
