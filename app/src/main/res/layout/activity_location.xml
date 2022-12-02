@@ -13,57 +13,22 @@
         android:layout_height="match_parent"
         />
 
-    <Button
-        android:id="@+id/startAuto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start auto"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true"
-        app:layout_constraintVertical_bias="0.900"
-        app:layout_constraintHorizontal_bias="0.150"/>
-
-    <Button
-        android:id="@+id/locationTest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="Try current"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.500"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.050" />
-
-    <Button
-        android:id="@+id/stopAuto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Stop auto"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        app:layout_constraintVertical_bias="0.900"
-        app:layout_constraintHorizontal_bias="0.850"
+    <fragment
+        android:id="@+id/buttons"
+        android:name="com.example.gps.ButtonFragment"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:layout_height="match_parent"
         />
 
-    <TextView
-        android:id="@+id/textViewTesting"
+    <Button
+        android:id="@+id/swapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="I am text"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Swap it"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.4" />
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

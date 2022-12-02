@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -28,9 +29,6 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
@@ -61,32 +59,26 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private TextView testView;
+    private Button swapperButton;
 
-    private Button autoUpdateStart;
-    private Button currentLocation;
-    private Button stopLocation;
+    private boolean mapShown = false;
 
     private double totalDistance = 0;
 
-    public GoogleMap locationMap;
+    private GoogleMap locationMap;
+    private SupportMapFragment mapFrag;
+    private ButtonFragment buttonFrag;
 
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
     public static final String SHARED_COORDINATES = "sharedPref";
-
- //   private List<Polyline> pathPoints;
-//    private List<LatLng> pathPointsLatLng = new List<LatLng>() {};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
-        autoUpdateStart = findViewById(R.id.startAuto);
-        currentLocation = findViewById(R.id.locationTest);
-        stopLocation = findViewById(R.id.stopAuto);
-        testView = findViewById(R.id.textViewTesting);
+        swapperButton = findViewById(R.id.swapper);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
@@ -100,11 +92,15 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
 
-        SupportMapFragment mapFrag = new SupportMapFragment();
-
+        mapFrag = new SupportMapFragment();
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
+        mapFrag.getView().setVisibility(View.INVISIBLE);
+
+        buttonFrag = new ButtonFragment();
+        buttonFrag = (ButtonFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.buttons);
 
         locationCallback = new LocationCallback() {
             @Override
@@ -113,32 +109,32 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 Location location = locationResult.getLastLocation();
                 InternetRunnable runnable = new InternetRunnable(location);
                 new Thread(runnable).start();
-
-
             }
         };
 
-        autoUpdateStart.setOnClickListener(new View.OnClickListener() {
+        swapperButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                autoUpdates();
+                if(mapShown){
+                    mapShown = false;
+                    fragSwap();
+                }else{
+                    mapShown = true;
+                    fragSwap();
+                }
             }
         });
 
-        stopLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopUpdates();
-            }
-        });
+    }
 
-        currentLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                firstLocation();
-            }
-        });
-
+    private void fragSwap(){
+        if(mapShown){
+            mapFrag.getView().setVisibility(View.VISIBLE);
+            buttonFrag.getView().setVisibility(View.INVISIBLE);
+        }else{
+            mapFrag.getView().setVisibility(View.INVISIBLE);
+            buttonFrag.getView().setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -190,7 +186,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
                         mapUpdater();
-                        testView.setText("totalDistance = " + finalTotalDistance);
                     }
                 });
             }
@@ -208,14 +203,15 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Stops the automatic updates
      */
-    private void stopUpdates() {
+    public void stopUpdates() {
         locationClient.removeLocationUpdates(locationCallback);
+        System.out.println("training over");
     }
 
     /**
      * Starts automatic updates, to add things to be done during updates see InternetRunnable
      */
-    private void autoUpdates() {
+    public void autoUpdates() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -223,44 +219,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         }
         locationClient.requestLocationUpdates(locationReq, locationCallback, null);
     }
-
-    /**
-     * Strictly for testing gps, has no practical use
-     */
-    private void firstLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-            locationClient.getCurrentLocation(100, null)
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
-                                //adds secondlast if there are more than one point
-                                if (locations.size() > 1) {
-                                    secondLastLocation = locations.get(locations.size() - 1);
-                                }
-
-                                String longitude = String.valueOf(location.getLongitude());
-                                String latitude = String.valueOf(location.getLatitude());
-                                String[] res = {latitude, longitude};
-                                String loc = "latitude set to: " + res[0] + "longitude set to: " + res[1] + " locationsize" + locations.size();
-                                System.out.println(loc);
-
-                                //adds current location to list
-                                locations.add(location);
-
-                            } else {
-                                System.out.println("No location found, set in emulator");
-                            }
-                        }
-                    });
-
-        } else {
-            ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            System.out.println("no permissions");
-        }
-    }
-
 
     //calculates average speed between two points
     private double averageSpeedLastCoordinates(Location location1, Location location2) {
@@ -282,19 +240,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         locationMap = googleMap;
         locationMap.setMyLocationEnabled(true);
         locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        /*
-        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
-        String latitude = coordinates.getString("latitude","57.708870");
-        String longitude = coordinates.getString("longitude","11.974560");
-
-        locationMap.setMyLocationEnabled(true);
-        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-
-
-        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-        */
-
     }
 
     public void mapUpdater(){
@@ -308,10 +253,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
             //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
+            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
             addLatestPolyline();
         }else{
             System.out.println("location.size still 0");
         }
+    }
     }
 
 
