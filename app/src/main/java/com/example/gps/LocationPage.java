@@ -309,7 +309,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
             //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
             addLatestPolyline();
-
         }else{
             System.out.println("location.size still 0");
         }
