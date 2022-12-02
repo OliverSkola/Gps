@@ -4,12 +4,14 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -45,11 +47,16 @@ import java.util.List;
 
 
 public class LocationPage extends AppCompatActivity implements OnMapReadyCallback {
-
     public static final int DEF_UPDATE = 5000; //At most 5000ms between updates
     public static final int DEF_MIN_UPDATE = 3000; //At least 3000ms between updates
     public static final int DEF_MAX_AGE = 6000; //When starting after stopping, old data is allowed to at most be 6000ms
 
+    boolean flag = true;
+    boolean is_on = true;
+    int timer = 0;
+
+    private boolean mapShown = false;
+    private ImageButton map_b;
     FusedLocationProviderClient locationClient; //Used to find location
     LocationRequest locationReq; //Config for locationClient
     LocationCallback locationCallback; //Used when updating automatically
@@ -66,6 +73,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     private Button autoUpdateStart;
     private Button currentLocation;
     private Button stopLocation;
+    private passFragment fragment;
 
     private double totalDistance = 0;
 
@@ -75,18 +83,16 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     public static final String LONGITUDE = "longitude";
     public static final String SHARED_COORDINATES = "sharedPref";
 
+
+    TimerRunnable timerRunnable = new TimerRunnable();
  //   private List<Polyline> pathPoints;
 //    private List<LatLng> pathPointsLatLng = new List<LatLng>() {};
-
+ SupportMapFragment mapFrag = new SupportMapFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
-        autoUpdateStart = findViewById(R.id.startAuto);
-        currentLocation = findViewById(R.id.locationTest);
-        stopLocation = findViewById(R.id.stopAuto);
-        testView = findViewById(R.id.textViewTesting);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
 
@@ -100,11 +106,15 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
 
-        SupportMapFragment mapFrag = new SupportMapFragment();
+
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
+        mapFrag.getView().setVisibility(View.INVISIBLE);
+        fragment = new passFragment();
+        fragment = (passFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.passfragment);
 
         locationCallback = new LocationCallback() {
             @Override
@@ -117,28 +127,53 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         };
+        map_b = findViewById(R.id.map_b);
+        map_b.setOnClickListener(v -> {
+            fragSwap();
 
-        autoUpdateStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                autoUpdates();
-            }
         });
+        start_timer();
+        autoUpdates();
+    }
 
-        stopLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopUpdates();
+    public void change_timer(boolean change){
+        is_on = change;
+    }
+
+    public void start_timer(){
+        new Thread(timerRunnable).start();
+    }
+
+    class TimerRunnable implements Runnable{
+
+        @Override
+        public void run() {
+            while(is_on){
+                timer = timer+1;
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        fragment.update_Time(timer);
+                    }
+                });
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        });
+        }
+    }
 
-        currentLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                firstLocation();
-            }
-        });
-
+    public void fragSwap(){
+        mapShown = !mapShown;
+        if(mapShown){
+            mapFrag.getView().setVisibility(View.VISIBLE);
+            fragment.getView().setVisibility(View.INVISIBLE);
+        }else{
+            mapFrag.getView().setVisibility(View.INVISIBLE);
+            fragment.getView().setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -158,7 +193,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             String longitude = String.valueOf(location.getLongitude());
             String latitude = String.valueOf(location.getLatitude());
             //Temporarily removed code, don't want to waste lookups for elevation for no reason when testing other things
-/*
+
             double elevation = Elevation.reqElevation(latitude, longitude);
 
             //Elevation returns -9999 at errors
@@ -168,9 +203,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 location.setAltitude(secondLastLocation.getAltitude());
             }
             System.out.println("current elevation = " + location.getAltitude());
-*/
 
-            if (secondLastLocation != null) {
+
+            if (secondLastLocation != null && flag) {
                 double angle = Angles.getAngle(location, secondLastLocation);
                 System.out.println("current angle = " + angle);
                 double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation);
@@ -190,7 +225,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
                         mapUpdater();
-                        testView.setText("totalDistance = " + finalTotalDistance);
+                        fragment.update_Info(totalDistance/1000, speedBetween, averageSpeedPass(), elevation, 100);
                     }
                 });
             }
@@ -198,7 +233,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             String[] res = {latitude, longitude};
             String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
             System.out.println(loc);
-
+            flag = true;
 
             //Always do this last
             secondLastLocation = location;
@@ -208,14 +243,15 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Stops the automatic updates
      */
-    private void stopUpdates() {
+    public void stopUpdates() {
+        flag = false;
         locationClient.removeLocationUpdates(locationCallback);
     }
 
     /**
      * Starts automatic updates, to add things to be done during updates see InternetRunnable
      */
-    private void autoUpdates() {
+    public void autoUpdates() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(LocationPage.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -329,8 +365,8 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
 
             PolylineOptions polyOpt = new PolylineOptions()
-                    .color(0x3ED6AE)
-                    .width(5)
+                    .color(Color.rgb(62, 214, 174))
+                    .width(15f)
                     .add(prelastLatlng)
                     .add(lastLatlng);
 //                    .add(new LatLng(57.7089,11.9746))
@@ -339,6 +375,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
                 locationMap.addPolyline(polyOpt);
         }
+    }
+
+    public void end_of_past(){
+        Intent intent = new Intent(LocationPage.this, resultActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 }

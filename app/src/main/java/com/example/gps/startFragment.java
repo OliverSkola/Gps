@@ -18,9 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link startFragment#newInstance} factory method to
- * create an instance of this fragment.
+
  */
 public class startFragment extends Fragment {
 
@@ -55,18 +53,7 @@ public class startFragment extends Fragment {
 
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment startFragman.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static startFragment newInstance(String param1, String param2) {
 
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -107,9 +94,9 @@ public class startFragment extends Fragment {
                 String char_as_string = charSequence.toString();
 
                 if(char_as_string.contains("\n")){
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    /*InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                    editText.setText(charSequence.subSequence(0, charSequence.length()-1));
+                    editText.setText(charSequence.subSequence(0, charSequence.length()-1));*/
                 }
             }
 
@@ -121,8 +108,8 @@ public class startFragment extends Fragment {
 
         age_b.setOnClickListener(v -> {
             editText.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(editText, 0);
+            /*InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(editText, 0);*/
         });
 
         activity_b.setOnClickListener(v -> {
@@ -213,9 +200,9 @@ public class startFragment extends Fragment {
 
         start_b.setOnClickListener(v -> {
             if (activity_t.getText().length() != 0 && (editText.getText().length() != 0 && editText.getText().length() < 4)){
-                Intent intent = new Intent(StartActivity.this, PassActivity.class);
+               /* Intent intent = new Intent(StartActivity.this, PassActivity.class);
                 startActivity(intent);
-                finish();
+                finish();*/
             }
 
         });

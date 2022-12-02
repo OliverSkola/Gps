@@ -1,8 +1,12 @@
 package com.example.gps;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,6 +41,10 @@ public class StartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(StartActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
 
         walking_c = findViewById(R.id.walking_check);
         running_c = findViewById(R.id.running_check);
@@ -177,7 +185,7 @@ public class StartActivity extends AppCompatActivity {
 
         start_b.setOnClickListener(v -> {
             if (activity_t.getText().length() != 0 && (editText.getText().length() != 0 && editText.getText().length() < 4)){
-                Intent intent = new Intent(StartActivity.this, PassActivity.class);
+                Intent intent = new Intent(StartActivity.this, LocationPage.class);
                 startActivity(intent);
                 finish();
             }

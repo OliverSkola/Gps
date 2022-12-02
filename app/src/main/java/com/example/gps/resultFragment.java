@@ -46,8 +46,8 @@ public class resultFragment extends Fragment {
     public static resultFragment newInstance(String param1, String param2) {
         resultFragment fragment = new resultFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        //args.putString(ARG_PARAM1, param1);
+        //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -67,9 +67,9 @@ public class resultFragment extends Fragment {
 
             back_b.setOnClickListener(v -> {
 
-                Intent intent = new Intent(resultActivity.this, StartActivity.class);
+               /* Intent intent = new Intent(resultActivity.this, StartActivity.class);
                 startActivity(intent);
-                finish();
+                finish();*/
             });
 
         return inflater.inflate(R.layout.fragment_result, container, false);

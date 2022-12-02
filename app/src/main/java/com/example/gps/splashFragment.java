@@ -34,8 +34,6 @@ public class splashFragment extends Fragment {
     public static splashFragment newInstance(String param1, String param2) {
         splashFragment fragment = new splashFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -49,7 +47,7 @@ public class splashFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        handler=new Handler();
+        /*handler=new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -64,7 +62,7 @@ public class splashFragment extends Fragment {
                         .replace(R.id.content_frame, fragment)
                         .commit();
             }
-        },3000);
+        },3000);*/
         return inflater.inflate(R.layout.activity_splash, container, false);
     }
 }

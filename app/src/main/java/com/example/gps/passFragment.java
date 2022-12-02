@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link passFragment#newInstance} factory method to
@@ -27,18 +30,23 @@ public class passFragment extends Fragment {
     private ImageButton pause_b;
     private ImageButton unpause_b;
     private ImageButton stop_b;
-    private ImageButton map_b;
+    //private ImageButton map_b;
 
     public void update_Time(int time){
-        tid_t.setText(String.valueOf(time));
+        String timer = time / 3600 + ":" + String.format("%02d" ,(time / 60) % 60) + ":" + String.format("%02d" , time % 60);
+        tid_t.setText(timer);
     }
 
-    public void update_Info(int kilometer_, int tempo_, int medel_, int elevation_, int kalorier_){
-        kilometer_t.setText(String.valueOf(kilometer_));
-        tempo_t.setText(String.valueOf(tempo_));
-        medel_t.setText(String.valueOf(medel_));
-        elevation_t.setText(String.valueOf(elevation_));
-        kalorier_t.setText(String.valueOf(kalorier_));
+    public void update_Info(double kilometer_, double tempo_, double medel_, double elevation_, double kalorier_){
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.CEILING);
+
+
+        kilometer_t.setText(String.valueOf(df.format(kilometer_)));
+        tempo_t.setText(String.valueOf(df.format(tempo_)));
+        medel_t.setText(String.valueOf(df.format(medel_)));
+        elevation_t.setText(String.valueOf(df.format(elevation_)));
+        kalorier_t.setText(String.valueOf(df.format(kalorier_)));
     }
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -96,13 +104,15 @@ public class passFragment extends Fragment {
         pause_b = view.findViewById(R.id.pause_button);
         unpause_b = view.findViewById(R.id.unpause_button);
         stop_b = view.findViewById(R.id.stop_button);
-        map_b = view.findViewById(R.id.map_b);
+        //map_b = view.findViewById(R.id.map_b);
 
         pause_b.setOnClickListener(v -> {
             pause_b.setVisibility(View.GONE);
 
             unpause_b.setVisibility(View.VISIBLE);
             stop_b.setVisibility(View.VISIBLE);
+            ((LocationPage) getActivity()).change_timer(false);
+            ((LocationPage) getActivity()).stopUpdates();
         });
 
         unpause_b.setOnClickListener(v -> {
@@ -110,18 +120,19 @@ public class passFragment extends Fragment {
 
             unpause_b.setVisibility(View.GONE);
             stop_b.setVisibility(View.GONE);
+            ((LocationPage) getActivity()).change_timer(true);
+            ((LocationPage) getActivity()).start_timer();
+            ((LocationPage) getActivity()).autoUpdates();
         });
 
         stop_b.setOnClickListener(v -> {
-            Intent intent = new Intent(PassActivity.this, resultActivity.class);
-            startActivity(intent);
-            finish();
+            ((LocationPage) getActivity()).end_of_past();
         });
 
-        map_b.setOnClickListener(v -> {
+        /*map_b.setOnClickListener(v -> {
+            ((LocationPage) getActivity()).fragSwap();
 
-
-        });
-        return inflater.inflate(R.layout.fragment_pass, container, false);
+        });*/
+        return view;
     }
 }

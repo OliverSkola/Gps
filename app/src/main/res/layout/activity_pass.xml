@@ -183,17 +183,4 @@
         app:layout_constraintVertical_bias="0.918"
         app:srcCompat="@drawable/stop" />
 
-    <ImageButton
-        android:id="@+id/map_b"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:rotationY="-180"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.031"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.01"
-        app:srcCompat="@drawable/map" />
 </androidx.constraintlayout.widget.ConstraintLayout>
