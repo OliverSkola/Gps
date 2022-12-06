@@ -83,6 +83,10 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     public static final String LONGITUDE = "longitude";
     public static final String SHARED_COORDINATES = "sharedPref";
 
+    public double weight;
+    public String trainingType;
+    private double calories = 0;
+
 
     TimerRunnable timerRunnable = new TimerRunnable();
  //   private List<Polyline> pathPoints;
@@ -90,8 +94,11 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
  SupportMapFragment mapFrag = new SupportMapFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+        Intent inputIntent = getIntent();
+        weight = inputIntent.getDoubleExtra("weight",0);
+        trainingType = inputIntent.getStringExtra("trainingType");
+
         setContentView(R.layout.activity_location);
 
         LocationRequest.Builder builder = new LocationRequest.Builder(DEF_UPDATE);
@@ -206,18 +213,27 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
 
             if (secondLastLocation != null && flag) {
+                /*
                 double angle = Angles.getAngle(location, secondLastLocation);
-                System.out.println("current angle = " + angle);
-                double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation);
+                System.out.println("current angle = " + angle);*/
+
+                double distance = location.distanceTo(secondLastLocation);
+                double elevationDiff = location.getAltitude() - secondLastLocation.getAltitude();
+
+                double hypotenuse = Math.sqrt(Math.pow(distance,2) + Math.pow(elevationDiff,2));
+                distances.add(hypotenuse);
+                totalDistance += hypotenuse;
+
+                double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation, hypotenuse);
                 averageSpeeds.add(speedBetween);
                 System.out.println("current speed = " + speedBetween);
 
-                double distance = location.distanceTo(secondLastLocation);
-                distances.add(distance);
-                totalDistance += distance;
-
                 System.out.println("average speed pass = " + averageSpeedPass());
                 System.out.println("total distance pass = " + totalDistance);
+
+                double minutes = (location.getElapsedRealtimeNanos() - secondLastLocation.getElapsedRealtimeNanos()) * Math.pow(10,-9)/60;
+
+                calories = calories + CaloriesBurned.getCalories(weight,minutes,speedBetween*3.6,trainingType);
 
                 //required to use in handler
                 final double finalTotalDistance = totalDistance;
@@ -225,7 +241,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void run() {
                         mapUpdater();
-                        fragment.update_Info(totalDistance/1000, speedBetween, averageSpeedPass(), elevation, 100);
+                        fragment.update_Info(totalDistance/1000, speedBetween, averageSpeedPass(), elevation, calories);
                     }
                 });
             }
@@ -299,8 +315,8 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
 
     //calculates average speed between two points
-    private double averageSpeedLastCoordinates(Location location1, Location location2) {
-        double distance = location1.distanceTo(location2);
+    private double averageSpeedLastCoordinates(Location location1, Location location2, double distance) {
+        //double distance = location1.distanceTo(location2);
 
         return (double) ((distance) / ((location1.getElapsedRealtimeNanos() * Math.pow(10, -9) - location2.getElapsedRealtimeNanos() * Math.pow(10, -9))));
     }
@@ -379,6 +395,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
     public void end_of_past(){
         Intent intent = new Intent(LocationPage.this, resultActivity.class);
+        intent.putExtra("calories",calories);
+        intent.putExtra("timer",timer);
+        intent.putExtra("distance",totalDistance);
         startActivity(intent);
         finish();
     }

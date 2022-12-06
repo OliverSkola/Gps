@@ -186,6 +186,10 @@ public class StartActivity extends AppCompatActivity {
         start_b.setOnClickListener(v -> {
             if (activity_t.getText().length() != 0 && (editText.getText().length() != 0 && editText.getText().length() < 4)){
                 Intent intent = new Intent(StartActivity.this, LocationPage.class);
+                Double weight = Double.valueOf(String.valueOf(editText.getText()));
+                intent.putExtra("weight",weight);
+                String trainingType = String.valueOf(activity_t.getText());
+                intent.putExtra("trainingType",trainingType);
                 startActivity(intent);
                 finish();
             }
