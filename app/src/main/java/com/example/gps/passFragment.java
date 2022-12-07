@@ -15,9 +15,10 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link passFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * @author Oliver Brottare and Ludvig Andersson
+ * @version 1.0
+ * @since   2022-12-07
+ * This class is used to data during the training pass
  */
 public class passFragment extends Fragment {
     private TextView tid_t;
@@ -32,11 +33,23 @@ public class passFragment extends Fragment {
     private ImageButton stop_b;
     //private ImageButton map_b;
 
+    /**
+     * Updates the timer according to the format used.
+     * @param time Current time
+     */
     public void update_Time(int time){
         String timer = time / 3600 + ":" + String.format("%02d" ,(time / 60) % 60) + ":" + String.format("%02d" , time % 60);
         tid_t.setText(timer);
     }
 
+    /**
+     * Updates everything except the timer.
+     * @param kilometer_ Total distance ran
+     * @param tempo_ Current speed
+     * @param medel_ Average speed
+     * @param elevation_ Current elevation
+     * @param kalorier_ Total Calories burnt
+     */
     public void update_Info(double kilometer_, double tempo_, double medel_, double elevation_, double kalorier_){
         DecimalFormat df = new DecimalFormat("#.##");
         df.setRoundingMode(RoundingMode.CEILING);
@@ -48,46 +61,25 @@ public class passFragment extends Fragment {
         elevation_t.setText(String.valueOf(df.format(elevation_)));
         kalorier_t.setText(String.valueOf(df.format(kalorier_)));
     }
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public passFragment() {
-        // Required empty public constructor
-    }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment passFragment.
+     * Create using the saved instance
+     * @param savedInstanceState The saved instance
      */
-    // TODO: Rename and change types and number of parameters
-    public static passFragment newInstance(String param1, String param2) {
-        passFragment fragment = new passFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        if (getArguments() != null){}
+
     }
 
+    /**
+     * Finds all the necessary objects in the layout and adds listeners.
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

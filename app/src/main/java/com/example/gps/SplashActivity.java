@@ -5,9 +5,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-public class SplashActivity extends Activity {
+import java.io.IOException;
 
+/**
+ * @author Oliver Brottare
+ * @version 1.0
+ * @since   2022-12-07
+ * Class for displaying the welcome screen.
+ */
+public class SplashActivity extends Activity {
     Handler handler;
+
+    /**
+     * On creation the screen shows up for three seconds before switching to the StartActivity screen.
+     * @param savedInstanceState A saved instance if needed.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

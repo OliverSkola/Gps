@@ -20,12 +20,26 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+/**
+ * @author Oliver Brottare and Ludvig Andersson
+ * @version 1.0
+ * @since   2022-12-07
+ * Class that displays the results of your training pass.
+ */
 public class resultActivity extends AppCompatActivity {
     private TextView date_t;
     private TextView kalorer_t;
     private TextView tid_t;
     private TextView distans_t;
 
+    /**
+     * Changes the text of the date, calories, time and distance on the result page.
+     * Also rounds them up to 2 decimals
+     * @param date_ Today's date
+     * @param kalorer_ The amount of kCal burnt
+     * @param tid_ TIme spent on the pass
+     * @param distans_ The distance spent on the pass
+     */
     public void update_Info(String date_, double kalorer_, String tid_, double distans_){
         DecimalFormat df = new DecimalFormat("#.##");
         df.setRoundingMode(RoundingMode.CEILING);
@@ -38,6 +52,10 @@ public class resultActivity extends AppCompatActivity {
         distans_t.setText(distance);
     }
 
+    /**
+     * Sets up the result page.
+     * @param savedInstanceState A saved instance if necessary
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

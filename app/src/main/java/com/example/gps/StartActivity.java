@@ -17,6 +17,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
+
+/**
+ * @£author Oliver Brottare and Ludvig Andersson
+ * @version 1.0
+ * @since   2022-12-07
+ * This class is the controller for the start page where you choose your training type and weight.
+ */
 public class StartActivity extends AppCompatActivity {
     private ImageView walking_c;
     private ImageView running_c;
@@ -37,6 +45,10 @@ public class StartActivity extends AppCompatActivity {
     private ImageButton age_b;
     private ImageButton start_b;
 
+    /**
+     * On creation the method ask for permission to use your location, finds all the buttons, text and images and adds listeners to some of them.
+     * @param savedInstanceState A saved instance if needed.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
