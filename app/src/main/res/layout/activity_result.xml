@@ -118,10 +118,10 @@
         android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.899"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.974"
-        app:srcCompat="@drawable/back" />
+        app:layout_constraintVertical_bias="0.166"
+        app:srcCompat="@drawable/close_x" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
