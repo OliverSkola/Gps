@@ -2,7 +2,6 @@ package com.example.gps;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -26,12 +25,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -51,8 +47,8 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     public static final int DEF_MIN_UPDATE = 3000; //At least 3000ms between updates
     public static final int DEF_MAX_AGE = 6000; //When starting after stopping, old data is allowed to at most be 6000ms
 
-    boolean flag = true;
-    boolean is_on = true;
+    boolean running = true; //Is set to false when paused
+    boolean timer_on = true; //Is set to false when paused
     int timer = 0;
 
     private boolean mapShown = false;
@@ -68,19 +64,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private TextView testView;
-
-    private Button autoUpdateStart;
-    private Button currentLocation;
-    private Button stopLocation;
-    private passFragment fragment;
+    private passFragment fragment; //Fragment for the page with calories burned, distance etc
 
     private double totalDistance = 0;
 
     public GoogleMap locationMap;
 
-    public static final String LATITUDE = "latitude";
-    public static final String LONGITUDE = "longitude";
     public static final String SHARED_COORDINATES = "sharedPref";
 
     public double weight;
@@ -89,9 +78,11 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
 
     TimerRunnable timerRunnable = new TimerRunnable();
- //   private List<Polyline> pathPoints;
-//    private List<LatLng> pathPointsLatLng = new List<LatLng>() {};
- SupportMapFragment mapFrag = new SupportMapFragment();
+    SupportMapFragment mapFrag = new SupportMapFragment();
+
+    /**
+     * Setup with information from the start screen
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,8 +103,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         locationReq = builder.build();
 
         locationClient = LocationServices.getFusedLocationProviderClient(LocationPage.this);
-
-
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -144,9 +133,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void change_timer(boolean change){
-        is_on = change;
+        timer_on = change;
     }
 
+    /**
+     * Starts a thread which is used as the timer
+     */
     public void start_timer(){
         new Thread(timerRunnable).start();
     }
@@ -155,7 +147,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public void run() {
-            while(is_on){
+            while(timer_on){
                 timer = timer+1;
                 mainHandler.post(new Runnable() {
                     @Override
@@ -171,7 +163,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
-
+    /**
+     * Swaps between showing the map or showing the page with calories burned, distance etc.
+     */
     public void fragSwap(){
         mapShown = !mapShown;
         if(mapShown){
@@ -199,7 +193,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             locations.add(location);
             String longitude = String.valueOf(location.getLongitude());
             String latitude = String.valueOf(location.getLatitude());
-            //Temporarily removed code, don't want to waste lookups for elevation for no reason when testing other things
 
             double elevation = Elevation.reqElevation(latitude, longitude);
 
@@ -209,13 +202,9 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             } else if(secondLastLocation != null) { //if elevation data fails for some reason, keep same as before
                 location.setAltitude(secondLastLocation.getAltitude());
             }
-            System.out.println("current elevation = " + location.getAltitude());
 
 
-            if (secondLastLocation != null && flag) {
-                /*
-                double angle = Angles.getAngle(location, secondLastLocation);
-                System.out.println("current angle = " + angle);*/
+            if (secondLastLocation != null && running) {
 
                 double distance = location.distanceTo(secondLastLocation);
                 double elevationDiff = location.getAltitude() - secondLastLocation.getAltitude();
@@ -226,17 +215,11 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
 
                 double speedBetween = averageSpeedLastCoordinates(location,secondLastLocation, hypotenuse);
                 averageSpeeds.add(speedBetween);
-                System.out.println("current speed = " + speedBetween);
-
-                System.out.println("average speed pass = " + averageSpeedPass());
-                System.out.println("total distance pass = " + totalDistance);
 
                 double minutes = (location.getElapsedRealtimeNanos() - secondLastLocation.getElapsedRealtimeNanos()) * Math.pow(10,-9)/60;
 
                 calories = calories + CaloriesBurned.getCalories(weight,minutes,speedBetween*3.6,trainingType);
 
-                //required to use in handler
-                final double finalTotalDistance = totalDistance;
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -246,10 +229,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                 });
             }
 
-            String[] res = {latitude, longitude};
-            String loc = "updated latitude set to: " + res[0] + " updated longitude set to: " + res[1] + " elevation = " + location.getAltitude();
-            System.out.println(loc);
-            flag = true;
+            running = true;
 
             //Always do this last
             secondLastLocation = location;
@@ -260,7 +240,7 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
      * Stops the automatic updates
      */
     public void stopUpdates() {
-        flag = false;
+        running = false;
         locationClient.removeLocationUpdates(locationCallback);
     }
 
@@ -313,11 +293,14 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
-    //calculates average speed between two points
+    /**
+     * Calculates average speed between two points
+     * @param location1 Location data for the first point, used since it contains the time that the data was received
+     * @param location2 Location data for the second point, used since it contains the time that the data was received
+     * @param distance The distance between the two points, including distance caused by elevation difference
+     * @return Average speed in m/s for the given parameters
+     */
     private double averageSpeedLastCoordinates(Location location1, Location location2, double distance) {
-        //double distance = location1.distanceTo(location2);
-
         return (double) ((distance) / ((location1.getElapsedRealtimeNanos() * Math.pow(10, -9) - location2.getElapsedRealtimeNanos() * Math.pow(10, -9))));
     }
 
@@ -334,19 +317,6 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
         locationMap = googleMap;
         locationMap.setMyLocationEnabled(true);
         locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        /*
-        SharedPreferences coordinates = getSharedPreferences(SHARED_COORDINATES, MODE_PRIVATE);
-        String latitude = coordinates.getString("latitude","57.708870");
-        String longitude = coordinates.getString("longitude","11.974560");
-
-        locationMap.setMyLocationEnabled(true);
-        locationMap.getUiSettings().setMyLocationButtonEnabled(true);
-        LatLng latlng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-
-
-        locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-        */
-
     }
 
     public void mapUpdater(){
@@ -359,17 +329,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
             Location lastLocation = locations.get(locations.size()-1);
             LatLng latlng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             locationMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 17));
-            //locationMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15));
             addLatestPolyline();
 
-        }else{
-            System.out.println("location.size still 0");
         }
     }
 
 
-
- //   void addLatestPolyline(List<Location> locations){
         void addLatestPolyline(){
         if ((locations != null) && (locations.size()>1)) {
             double lat= locations.get(locations.size() - 1).getLatitude();
@@ -385,15 +350,12 @@ public class LocationPage extends AppCompatActivity implements OnMapReadyCallbac
                     .width(15f)
                     .add(prelastLatlng)
                     .add(lastLatlng);
-//                    .add(new LatLng(57.7089,11.9746))
-//                    .add(new LatLng(57.7072,11.9715))
-//                    .add(new LatLng(57.7068,11.9702));
 
-                locationMap.addPolyline(polyOpt);
+            locationMap.addPolyline(polyOpt);
         }
     }
 
-    public void end_of_past(){
+    public void end_of_pass(){
         Intent intent = new Intent(LocationPage.this, resultActivity.class);
         intent.putExtra("calories",calories);
         intent.putExtra("timer",timer);

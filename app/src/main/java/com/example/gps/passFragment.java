@@ -1,6 +1,5 @@
 package com.example.gps;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -118,7 +117,7 @@ public class passFragment extends Fragment {
         });
 
         stop_b.setOnClickListener(v -> {
-            ((LocationPage) getActivity()).end_of_past();
+            ((LocationPage) getActivity()).end_of_pass();
         });
 
         /*map_b.setOnClickListener(v -> {
